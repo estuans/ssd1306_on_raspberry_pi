@@ -1,0 +1,9 @@
+[Unit]
+After=network.service
+
+[Service]
+ExecStart=//usr/local/display/U6143_ssd1306-master/display.sh
+
+[Install]
+WantedBy=default.target
+
