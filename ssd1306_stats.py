@@ -76,8 +76,6 @@ while True:
     Temp = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
     Temp = "Temp: " + Temp + chr(176) + "C"
 
-    print(IP + "\n" + CPU + " " + Temp + "\n" + MemUsage + "\n"  + Disk + "\n")
-
     # Write four lines of text.
 
     draw.text((x, top + 0), IP, font=font, fill=255)
