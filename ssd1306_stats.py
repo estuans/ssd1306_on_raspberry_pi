@@ -40,14 +40,6 @@ draw.rectangle((0, 0, width, height), outline=0, fill=0)
 font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
 
 
-# Draw text.
-draw.text((0, 5), "UCTRONICS", font=font, fill=255)
-  # Display image.
-disp.image(image)
-disp.show()
-# Pause briefly before drawing next frame.
-time.sleep(3)
-
 font = ImageFont.load_default()
 # Draw some shapes.
 # First define some constants to allow easy resizing of shapes.
