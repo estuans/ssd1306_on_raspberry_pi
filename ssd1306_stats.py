@@ -13,6 +13,10 @@ from board import SCL, SDA
 import busio
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
+
+cores=4
+interval=1
+
 # Create the I2C interface.
 i2c = busio.I2C(SCL, SDA)
 # Create the SSD1306 OLED class.
@@ -56,8 +60,13 @@ while True:
     # https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
     cmd = "hostname -I | cut -d' ' -f1"
     IP = ("IP: " + subprocess.check_output(cmd, shell=True).decode("utf-8")).strip()
-    cmd = "top -bn1 | grep load | awk '{printf \"CPU: %.2f\", $(NF-2)}'"
-    CPU = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+    #cmd = "top -bn1 | grep load | awk '{printf \"CPU: %.2f\", $(NF-2)}'"
+    #CPU = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+    f=open('/proc/loadavg','r')
+    loadavg=f.readline();
+    f.close()
+    load5=float(loadavg.split()[0])
+    CPU="CPU: {:.0f}%".format((load5 / cores) * 100)
     cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%s MB  %.2f%%\", $3,$2,$3*100/$2 }'"
     MemUsage = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
     cmd = 'df -h | awk \'$NF=="/"{printf "Disk: %d/%d GB", $3,$2}\''
@@ -78,4 +87,4 @@ while True:
     # Display image.
     disp.image(image)
     disp.show()
-    time.sleep(0.1)
+    time.sleep(interval)
