@@ -1,12 +1,16 @@
-# ssd1306_on_raspberry_pi_4
-Automatic system service to display stats on an SSD1306 OLED display on a Raspberry Pi 4
+# ssd1306_on_raspberry_pi
 
-USE AT YOUR OWN RISK!
+Automatic system service to display stats on an SSD1306 OLED display on a Raspberry Pi
 
-This is code I found on the internet and modified to automatically configure an SSD1306 OLED display to show IP address, CPU load, CPU temperature, disk space, and available memory.  
+Tested on RPi OS bookworm and Debian bookworm
 
-You can try running the setup.sh script to automatically setup the system, but I'd recommend looking at that file and manually doing the steps that you need to.  
+Forked from https://github.com/jeffisfast/ssd1306_on_raspberry_pi_4
 
-Enjoy.
+# Prerequesite  
 
+apt-get install build-essential python3-dev i2c-tools
+
+# Setup
+
+./setup.sh will create a python3 venv with the necessary modules to run ssd1306_stats.py
 
