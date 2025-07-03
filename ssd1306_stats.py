@@ -16,6 +16,48 @@ import adafruit_ssd1306
 
 cores=4
 interval=1
+cpu_last=[]
+cpu_last_sum=0
+
+def get_meminfo():
+    with open('/proc/meminfo') as file:
+        for line in file:
+            if 'MemTotal' in line:
+                total_mem_in_kb = int(line.split()[1])
+            if 'MemAvailable' in line:
+                available_mem_in_kb = int(line.split()[1])
+            if 'Shmem' in line:
+                shared_mem_in_kb = int(line.split()[1])
+            try:
+                if total_mem_in_kb and available_mem_in_kb and shared_mem_in_kb:
+                    f.close()
+                    break
+            except:
+                continue
+    used_mem_in_kb=total_mem_in_kb-available_mem_in_kb-shared_mem_in_kb
+    return(int(used_mem_in_kb/1024), int(total_mem_in_kb/1024))
+
+def get_cpu_usage():
+    global cpu_last
+    global cpu_last_sum
+    # logic taken from https://www.idnt.net/en-GB/kb/941772
+    f=open('/proc/stat','r')
+    sline=f.readline().split()
+    sline.pop(0)
+    cpu_now=list(map(int,sline))
+    cpu_sum=sum(cpu_now)
+    if cpu_last_sum != 0:
+        cpu_delta=cpu_sum - cpu_last_sum
+        cpu_idle=cpu_now[3]- cpu_last[3]
+        cpu_used=cpu_delta - cpu_idle
+        cpu_usage=100 * cpu_used / cpu_delta
+        cpu_last=cpu_now
+        cpu_last_sum=cpu_sum
+        return(cpu_usage)
+    else:
+        cpu_last=cpu_now
+        cpu_last_sum=cpu_sum
+        return 0
 
 # Create the I2C interface.
 i2c = busio.I2C(SCL, SDA)
@@ -60,15 +102,9 @@ while True:
     # https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
     cmd = "hostname -I | cut -d' ' -f1"
     IP = ("IP: " + subprocess.check_output(cmd, shell=True).decode("utf-8")).strip()
-    #cmd = "top -bn1 | grep load | awk '{printf \"CPU: %.2f\", $(NF-2)}'"
-    #CPU = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
-    f=open('/proc/loadavg','r')
-    loadavg=f.readline();
-    f.close()
-    load5=float(loadavg.split()[0])
-    CPU="CPU: {:.0f}%".format((load5 / cores) * 100)
-    cmd = "free -m | awk 'NR==2{printf \"Mem: %s/%s MB  %.2f%%\", $3,$2,$3*100/$2 }'"
-    MemUsage = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+    CPU="CPU: {:.0f}%".format(get_cpu_usage())
+    meminfo=get_meminfo()
+    MemUsage="Mem: {:d}/{:d} MB".format(meminfo[0],meminfo[1])
     cmd = 'df -h | awk \'$NF=="/"{printf "Disk: %d/%d GB", $3,$2}\''
     Disk = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
 
