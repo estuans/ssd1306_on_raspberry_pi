@@ -63,10 +63,9 @@ while True:
     cmd = 'df -h | awk \'$NF=="/"{printf "Disk: %d/%d GB", $3,$2}\''
     Disk = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
 
-    # Added by JT 10-07-2021
-    cmd = "vcgencmd measure_temp | egrep -o '[0-9]*\.[0-9]*'"
-    Temp = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
-    Temp = "Temp: " + Temp + chr(176) + "C"
+    f=open("/sys/class/thermal/thermal_zone0/temp", "r")
+    Temp = f.readline()
+    Temp = "Temp: " + "{:.2f}".format(int(Temp) /1000) + chr(176) + "C"
 
     # Write four lines of text.
 
