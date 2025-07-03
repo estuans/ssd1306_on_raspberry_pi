@@ -14,7 +14,6 @@ import busio
 from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
 
-cores=4
 interval=1
 cpu_last=[]
 cpu_last_sum=0
