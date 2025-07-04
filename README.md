@@ -6,9 +6,9 @@ Tested on RPi OS bookworm and Debian bookworm
 
 Forked from https://github.com/jeffisfast/ssd1306_on_raspberry_pi_4
 
-# Prerequesites
+# Prerequisites
 
-apt-get install build-essential python3-dev i2c-tools
+apt-get install build-essential python3-dev i2c-tools fonts-dejavu-core
 
 # Setup
 
