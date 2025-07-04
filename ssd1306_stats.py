@@ -8,6 +8,8 @@
 import math
 import time
 import subprocess
+import re
+import shutil
 
 from board import SCL, SDA
 import busio
@@ -34,7 +36,7 @@ def get_meminfo():
             except:
                 continue
     used_mem_in_kb=total_mem_in_kb-available_mem_in_kb-shared_mem_in_kb
-    return(int(used_mem_in_kb/1024), int(total_mem_in_kb/1024))
+    return(used_mem_in_kb/1024, total_mem_in_kb/1024)
 
 def get_cpu_usage():
     global cpu_last
@@ -58,6 +60,22 @@ def get_cpu_usage():
         cpu_last_sum=cpu_sum
         return 0
 
+def get_ip():
+        with open('/proc/net/fib_trie') as file:
+                for line in file:
+                        line=line.strip()
+                        if line == 'Local:':
+                                break
+                        ipline=re.compile('\|-- (\S+)')
+                        typeline=re.compile('32 host')
+                        mi=ipline.search(line)
+                        mt=typeline.search(line)
+                        if mi is not None:
+                                ip=mi.group(1)
+                        if mt is not None and ip[0:5] != '127.0':
+                                return(ip)
+
+
 # Create the I2C interface.
 i2c = busio.I2C(SCL, SDA)
 # Create the SSD1306 OLED class.
@@ -74,6 +92,10 @@ disp.show()
 width = disp.width
 height = disp.height
 image = Image.new("1", (width, height))
+
+def get_disk_usage():
+     total, used, free = shutil.disk_usage("/")
+     return("{:.0f}/{:.0f} GB".format(used/pow(2,30), total/pow(2,30)))
 
 # Get drawing object to draw on image.
 draw = ImageDraw.Draw(image)
@@ -97,15 +119,11 @@ while True:
     # Draw a black filled box to clear the image.
     draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
-    # Shell scripts for system monitoring from here:
-    # https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
-    cmd = "hostname -I | cut -d' ' -f1"
-    IP = ("IP: " + subprocess.check_output(cmd, shell=True).decode("utf-8")).strip()
+    IP = "IP: " + get_ip()
     CPU="CPU: {:.0f}%".format(get_cpu_usage())
     meminfo=get_meminfo()
-    MemUsage="Mem: {:d}/{:d} MB".format(meminfo[0],meminfo[1])
-    cmd = 'df -h | awk \'$NF=="/"{printf "Disk: %d/%d GB", $3,$2}\''
-    Disk = subprocess.check_output(cmd, shell=True).decode("utf-8").strip()
+    MemUsage="Mem: {:.0f}/{:.0f} MB".format(meminfo[0],meminfo[1])
+    Disk = "Disk: " + get_disk_usage()
 
     f=open("/sys/class/thermal/thermal_zone0/temp", "r")
     Temp = f.readline()
