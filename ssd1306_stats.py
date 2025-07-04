@@ -15,9 +15,10 @@ from PIL import Image, ImageDraw, ImageFont
 import adafruit_ssd1306
 
 interval=1
+display=['ip','cpu','mem','disk']
+
 cpu_last=[]
 cpu_last_sum=0
-display=['ip','cpu','mem','disk']
 
 def get_meminfo():
     with open('/proc/meminfo') as file:
@@ -74,6 +75,9 @@ def get_ip():
                         if mt is not None and ip[0:5] != '127.0':
                                 return(ip)
 
+def get_disk_usage():
+     total, used, free = shutil.disk_usage("/")
+     return("{:.0f}/{:.0f} GB".format(used/pow(2,30), total/pow(2,30)))
 
 # Create the I2C interface.
 i2c = busio.I2C(SCL, SDA)
@@ -91,10 +95,6 @@ disp.show()
 width = disp.width
 height = disp.height
 image = Image.new("1", (width, height))
-
-def get_disk_usage():
-     total, used, free = shutil.disk_usage("/")
-     return("{:.0f}/{:.0f} GB".format(used/pow(2,30), total/pow(2,30)))
 
 # Get drawing object to draw on image.
 draw = ImageDraw.Draw(image)
