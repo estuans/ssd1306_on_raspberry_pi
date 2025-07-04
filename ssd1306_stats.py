@@ -19,6 +19,7 @@ import adafruit_ssd1306
 interval=1
 cpu_last=[]
 cpu_last_sum=0
+display=['ip','cpu','mem','disk']
 
 def get_meminfo():
     with open('/proc/meminfo') as file:
@@ -131,10 +132,14 @@ while True:
 
     # Write four lines of text.
 
-    draw.text((x, top + 0), IP, font=font, fill=255)
-    draw.text((x, top + 8), CPU + " " + Temp, font=font, fill=255)
-    draw.text((x, top + 16), MemUsage, font=font, fill=255)
-    draw.text((x, top + 25), Disk, font=font, fill=255)
+    if 'ip' in display:
+        draw.text((x, top + 0), IP, font=font, fill=255)
+    if 'cpu' in display:
+        draw.text((x, top + 8), CPU + " " + Temp, font=font, fill=255)
+    if 'mem' in display:
+        draw.text((x, top + 16), MemUsage, font=font, fill=255)
+    if 'disk' in display:
+        draw.text((x, top + 25), Disk, font=font, fill=255)
 
 
     # Display image.
