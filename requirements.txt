@@ -1,0 +1,5 @@
+Adafruit-Blinka
+RPi.GPIO
+pillow
+adafruit-circuitpython-ssd1306
+async_tkinter_loop
