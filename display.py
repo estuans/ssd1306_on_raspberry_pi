@@ -9,7 +9,7 @@ import asyncio
 from async_tkinter_loop import async_handler, async_mainloop
 import tkinter as tk
 from itertools import cycle
-from widgets import Heartbeat
+from widgets import Heartbeat, ClockWidget, ActivityWidget
 import adafruit_ssd1306
 
 class Page:
@@ -39,8 +39,9 @@ class Page:
     def render(self):
         font_width = self.display.textsize(self.name)
         #self.display.draw_text((self.display.center_x - (font_width / 2), 0), self.name)
-        self.display.draw_text((2, 0), self.name)
-        self.display.draw.rectangle((font_width + 4, 6, self.display.width - 4, 6 ), outline=255, fill=255)
+        self.display.draw_text((3, -1), self.name)
+        if self.display.border == True:
+         self.display.draw.rectangle((font_width + 4, 7, self.display.width - self.display.cl.width, 7 ), outline=255, fill=255)
         
         y_offset = 0
         y_idx = 1
@@ -56,7 +57,7 @@ class Page:
                 this_text_width = int(self.display.textsize(widget.value))
                 test_width = last_text_width + 2 + this_text_width
                 if (test_width < self.display.width):
-                    x_offset = last_text_width + 1
+                    x_offset = last_text_width + 2
                     last_text_width = test_width
                     #y_offset = (y_idx - 1) * 8
                 else:
@@ -75,7 +76,7 @@ class Display:
     cur_page = None
     pages = []
 
-    def __init__(self, font=None, page_pin=None, width=128, height=32):
+    def __init__(self, font=None, page_pin=None, width=128, height=32,**kwargs):
 
         self.pages = []
         self.page_loop = cycle(self.pages)
@@ -107,7 +108,12 @@ class Display:
         self.bottom = height - padding
         # Move left to right keeping track of the current x position for drawing shapes.
         self.x = 0
+
+        self.border = kwargs.get("border", True)
+
         self.hb = Heartbeat(display=self)
+        self.cl = ClockWidget(display=self)
+        self.act = ActivityWidget(display=self)
         
         if page_pin:
             self.page_pin = page_pin
@@ -135,8 +141,7 @@ class Display:
         #     print("Button Held!")
         pass
 
-    @async_handler
-    async def show_display(self):
+    def show_display(self):
         self.sleeps = 0
         self.next_page()
         while True:
@@ -147,10 +152,12 @@ class Display:
                 self.clear()
                 self.cur_page.render()
                 self.sleeps = 0
+            self.cl.render()
             self.hb.render()
+            self.act.render()
             self.update()
             self.sleeps += 1
-            await asyncio.sleep(1)
+            time.sleep(1)
 
     def add_page(self, name, idx=0, interval=1):
         p = Page(name, interval=interval, display=self)
@@ -200,6 +207,25 @@ class VirtualDisplay(Display):
         #self.device.imshow(self.image)
         self.tk_img.paste(self.scaled_image)
         #self.device.show()
+
+    @async_handler
+    async def show_display(self):
+        self.sleeps = 0
+        self.next_page()
+        while True:
+            self.check_input()
+            #self.clear()
+            if self.sleeps == self.cur_page.interval: 
+                self.next_page()
+                self.clear()
+                self.cur_page.render()
+                self.sleeps = 0
+            self.hb.render()
+            self.cl.render()
+            self.act.render()
+            self.update()
+            self.sleeps += 1
+            await asyncio.sleep(1)
 
     def start(self):
         async_mainloop(self.window)

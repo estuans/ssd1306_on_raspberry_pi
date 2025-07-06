@@ -1,12 +1,13 @@
 import shutil
 import re
-
-
+from datetime import datetime
 class Widget:
 
     name = ""
     position_x = 0
-    position_y = 0 
+    position_y = 0
+    width = 0
+    height = 0
 
     def __init__(self, position_x=0, position_y=0, page=None, display=None):
         self.position_x = position_x
@@ -55,7 +56,43 @@ class Heartbeat(Widget):
             col = 255
         else:
             col = 0  
-        disp.draw.rectangle((disp.width -3, 0, disp.width -1, 4), outline=col, fill=0)
+        disp.draw.rectangle((0, 0, 2, 8), outline=255, fill=col)
+
+class ClockWidget(Widget):
+    
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.twelvehr = kwargs.get("twelvehr", False)
+
+    def get_value(self):
+        dt = datetime.now()
+        df = dt.strftime(" %H:%M")
+
+        if self.twelvehr:
+            df = dt.strftime(" %I:%M %p")
+
+        return df
+
+    def render(self):
+        disp = self.display
+        x_offset = self.display.textsize(self.value)
+        self.width = x_offset
+        #disp.draw_text((50,0),self.value)
+        disp.draw_text((disp.width - (x_offset + 1), -1),self.value)
+
+class ActivityWidget(Heartbeat):
+
+    def render(self):
+        if self.value:
+            v = u" \u2191"
+        else:
+            v = u" \u2193"
+        
+        a_x = self.display.width - self.display.cl.width - 8
+        self.display.draw.rectangle((a_x, -1,a_x,0), outline=0, fill=0)
+        self.display.draw_text((a_x, -1),v)
+
 
 class TempWidget(Widget):
     
