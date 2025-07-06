@@ -60,9 +60,9 @@ class Page:
                     last_text_width = test_width
                     #y_offset = (y_idx - 1) * 8
                 else:
-                    print("Too wide!")
-                    print(last_widget)
-                    print(widget)
+                    # print("Too wide!")
+                    # print(last_widget)
+                    # print(widget)
                     y_idx += 1
                     last_text_width = 0
             
