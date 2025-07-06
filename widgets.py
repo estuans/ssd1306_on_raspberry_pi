@@ -51,16 +51,18 @@ class Heartbeat(Widget):
 
     def render(self):
         disp = self.display
-        val = self.value
-        #print(val)
-        disp.draw.rectangle((disp.width -1, disp.height - 1, disp.width, disp.height), outline=val, fill=0)
+        if self.value:
+            col = 255
+        else:
+            col = 0  
+        disp.draw.rectangle((disp.width -3, 0, disp.width -1, 4), outline=col, fill=0)
 
 class TempWidget(Widget):
     
     def get_value(self):
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
             temp = f.readline()
-            temp = "Temp: " + "{:.2f}".format(int(temp) /1000) + chr(176) + "C"
+            temp = "T:" + "{:.0f}".format(int(temp) /1000) + chr(176) + "C"
         return temp
 
 class MemWidget(Widget):
@@ -85,7 +87,7 @@ class MemWidget(Widget):
 
     def get_value(self):
         meminfo=self.get_meminfo()
-        mem_usage="Mem: {:.0f}/{:.0f} MB".format(meminfo[0],meminfo[1])
+        mem_usage="M:{:.0f}/{:.0f} MB".format(meminfo[0],meminfo[1])
         return mem_usage
 
 class NetworkWidget(Widget):
@@ -126,7 +128,10 @@ class CPUWidget(Widget):
             cpu_delta=cpu_sum - self.cpu_last_sum
             cpu_idle=cpu_now[3]- self.cpu_last[3]
             cpu_used=cpu_delta - cpu_idle
-            cpu_usage=100 * cpu_used / cpu_delta
+            try:
+                cpu_usage=100 * cpu_used / cpu_delta
+            except ZeroDivisionError:
+                cpu_usage = 0
             self.cpu_last=cpu_now
             self.cpu_last_sum=cpu_sum
             return(cpu_usage)
@@ -136,7 +141,7 @@ class CPUWidget(Widget):
             return 0
 
     def get_value(self):
-        return "CPU: {:.0f}%".format(self.get_cpu_usage())
+        return "CPU:{:.0f}%".format(self.get_cpu_usage())
 
 
 
@@ -144,5 +149,5 @@ class DiskWidget(Widget):
 
     def get_value(self):
         total, used, free = shutil.disk_usage("/")
-        return("{:.0f}/{:.0f} GB".format(used/pow(2,30), total/pow(2,30)))
+        return("D:{:.0f}/{:.0f} GB ".format(used/pow(2,30), total/pow(2,30)))
 
